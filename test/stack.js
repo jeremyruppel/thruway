@@ -11,7 +11,7 @@ describe('stack', function() {
     stack.use(function(req, res, next) {
       assert.equal(req, 'REQ');
       assert.equal(res, 'RES');
-      next();
+      process.nextTick(next);
     });
 
     stack('REQ', 'RES', done);
@@ -24,7 +24,7 @@ describe('stack', function() {
       assert.equal(req, 'REQ');
       assert.equal(res, 'RES');
       count++;
-      next();
+      process.nextTick(next);
     }
 
     stack.use(fn);

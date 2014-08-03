@@ -4,8 +4,11 @@ module.exports = function() {
 
   function run(req, res, done) {
 
-    function next() {
-      if (stack.length) {
+    function next(err) {
+
+      if (err) {
+        done(err);
+      } else if (stack.length) {
         var fn = stack.shift();
 
         fn(req, res, next);
