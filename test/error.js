@@ -39,4 +39,39 @@ describe('error', function() {
       done();
     });
   });
+  it('passes an error to a separate error stack', function(done) {
+    var stack = subject();
+    var error = new Error('boom');
+
+    stack.use(function(req, res, next) {
+      next(error);
+    });
+    stack.use(function(err, req, res, next) {
+      assert.equal(err, error);
+      assert.equal(req, 'REQ');
+      assert.equal(res, 'RES');
+      done();
+    });
+
+    stack('REQ', 'RES');
+  });
+  it('throws an error if an error handler does not pass the middleware', function(done) {
+    var stack = subject();
+    var error = new Error('boom');
+
+    stack.use(function(req, res, next) {
+      next(error);
+    });
+    stack.use(function(err, req, res, next) {
+      try {
+        next();
+      } catch (err) {
+        assert.equal(err.message,
+          'Error handlers must pass an error to next()');
+        done();
+      }
+    });
+
+    stack('REQ', 'RES');
+  });
 });
