@@ -78,4 +78,38 @@ describe('stack', function() {
       done();
     });
   });
+  it('throws an error if res() is called twice', function(done) {
+    var stack = subject();
+
+    stack.use(function(req, res, next) {
+      res();
+
+      try {
+        res();
+      } catch (err) {
+        assert.equal(err.message,
+          'res() may only be called once');
+        done();
+      }
+    });
+
+    stack('REQ', function(){});
+  });
+  it('throws an error if next() is called twice', function(done) {
+    var stack = subject();
+
+    stack.use(function(req, res, next) {
+      next();
+
+      try {
+        next();
+      } catch (err) {
+        assert.equal(err.message,
+          'next() may only be called once');
+        done();
+      }
+    });
+
+    stack('REQ', function(){});
+  });
 });

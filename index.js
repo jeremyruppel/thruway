@@ -29,9 +29,23 @@ module.exports = function() {
   var threw = false;
 
   /**
-   * TODO
+   * Returns a wrapper function that ensures the inner function
+   * may only be called once.
+   *
+   * @api private
    */
-  var ended = false;
+  function once(fn, message) {
+    var called = false;
+
+    return function() {
+      if (called) {
+        throw new Error(message);
+      } else {
+        called = true;
+        return fn.apply(this, arguments);
+      }
+    }
+  }
 
   /**
    * Sends `req` and `res` down the middleware stack, calling
@@ -39,10 +53,7 @@ module.exports = function() {
    */
   function run(req, done) {
 
-    function res(err, val) {
-      ended = true;
-      done(err, val);
-    }
+    var res = once(done, 'res() may only be called once');
 
     function nextStack(err) {
       if (err) {
@@ -50,7 +61,7 @@ module.exports = function() {
         next(err);
       } else if (stack.length) {
         var fn = stack.shift();
-        fn(req, res, next);
+        fn(req, res, once(next, 'next() may only be called once'));
       } else {
         res(null);
       }
@@ -61,7 +72,7 @@ module.exports = function() {
         throw new Error('Error handlers must pass an error to next()');
       } else if (error.length) {
         var fn = error.shift();
-        fn(err, req, res, next);
+        fn(err, req, res, once(next, 'next() may only be called once'));
       } else {
         res(err);
       }

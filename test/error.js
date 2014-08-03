@@ -106,10 +106,52 @@ describe('error', function() {
       } catch (err) {
         assert.equal(err.message,
           'Error handlers must pass an error to next()');
-        res();
+        done();
       }
     });
 
-    stack('REQ', done);
+    stack('REQ', function(){});
+  });
+  it('throws an error if res() is called twice', function(done) {
+    var stack = subject();
+    var error = new Error('boom');
+
+    stack.use(function(req, res, next) {
+      next(error);
+    });
+    stack.use(function(err, req, res, next) {
+      res();
+
+      try {
+        res();
+      } catch (err) {
+        assert.equal(err.message,
+          'res() may only be called once');
+        done();
+      }
+    });
+
+    stack('REQ', function(){});
+  });
+  it('throws an error if next() is called twice', function(done) {
+    var stack = subject();
+    var error = new Error('boom');
+
+    stack.use(function(req, res, next) {
+      next(error);
+    });
+    stack.use(function(err, req, res, next) {
+      next(err);
+
+      try {
+        next(err);
+      } catch (err) {
+        assert.equal(err.message,
+          'next() may only be called once');
+        done();
+      }
+    });
+
+    stack('REQ', function(){});
   });
 });
