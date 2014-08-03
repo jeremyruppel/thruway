@@ -1,9 +1,37 @@
+/**
+ * Creates a new middleware stack.
+ *
+ * @returns {Function} run
+ */
 module.exports = function() {
 
+  /**
+   * The middleware stack.
+   *
+   * @api private
+   */
   var stack = [];
+
+  /**
+   * The error handler stack.
+   *
+   * @api private
+   */
   var error = [];
+
+  /**
+   * Whether or not an error has been passed to `next`.
+   * Determines whether we're working off the middleware or
+   * error handler stack.
+   *
+   * @api private
+   */
   var threw = false;
 
+  /**
+   * Sends `req` and `res` down the middleware stack, calling
+   * `done` when the current stack has been exhausted.
+   */
   function run(req, res, done) {
 
     function nextStack(err) {
@@ -40,13 +68,50 @@ module.exports = function() {
     next();
   }
 
-  run.use = function(fn) {
+  /**
+   * Adds a new middleware or error handler to the front of
+   * the appropriate stack.
+   *
+   * @param {Function} fn
+   * @returns {run} for chaining
+   * @api public
+   */
+  run.unshift = function(fn) {
+    if (fn.length === 4) {
+      error.unshift(fn);
+    } else {
+      stack.unshift(fn);
+    }
+    return run;
+  };
+
+  /**
+   * Adds a new middleware or error handler to the end of
+   * the appropriate stack.
+   *
+   * @param {Function} fn
+   * @returns {run} for chaining
+   * @api public
+   */
+  run.push = function(fn) {
     if (fn.length === 4) {
       error.push(fn);
     } else {
       stack.push(fn);
     }
     return run;
+  };
+
+  /**
+   * Adds a new middleware or error handler to the end of
+   * the appropriate stack.
+   *
+   * @param {Function} fn
+   * @returns {run} for chaining
+   * @api public
+   */
+  run.use = function(fn) {
+    return run.push(fn);
   };
 
   return run;
