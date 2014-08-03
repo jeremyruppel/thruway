@@ -41,4 +41,13 @@ stack('REQ', 'RES', function(err, res){
 });
 ```
 
+## License
+
+[ISC License][LICENSE]
+
 [1]: http://expressjs.com/
+[npm]: http://badge.fury.io/js/thruway
+[npm-badge]: https://badge.fury.io/js/thruway.svg
+[travis-ci]: https://travis-ci.org/jeremyruppel/thruway
+[travis-badge]: https://travis-ci.org/jeremyruppel/thruway.svg?branch=master
+[LICENSE]: https://github.com/jeremyruppel/thruway/blob/master/LICENSE
