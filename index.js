@@ -29,10 +29,20 @@ module.exports = function() {
   var threw = false;
 
   /**
+   * TODO
+   */
+  var ended = false;
+
+  /**
    * Sends `req` and `res` down the middleware stack, calling
    * `done` when the current stack has been exhausted.
    */
-  function run(req, res, done) {
+  function run(req, done) {
+
+    function res(err, val) {
+      ended = true;
+      done(err, val);
+    }
 
     function nextStack(err) {
       if (err) {
@@ -42,7 +52,7 @@ module.exports = function() {
         var fn = stack.shift();
         fn(req, res, next);
       } else {
-        done(null, res);
+        res(null);
       }
     }
 
@@ -53,7 +63,7 @@ module.exports = function() {
         var fn = error.shift();
         fn(err, req, res, next);
       } else {
-        done(err, res);
+        res(err);
       }
     }
 

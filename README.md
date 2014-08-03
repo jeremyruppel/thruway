@@ -13,32 +13,39 @@ $ npm install thruway
 
 ## Usage
 
-**thruway** creates a generic middleware stack that follows the [express][1] middleware stack semantics very closely. It keeps the concept of passing two arguments for the "request" and "response", but these may be any values that you choose to provide.
+**thruway** creates a generic middleware stack that follows the [express][1] middleware stack semantics closely. It keeps the concept of passing two arguments for the "request" and "response", except that the "request" may be any value you wish and the "response" is a function that will exit the middleware stack.
 
 ``` javascript
 var stack = require('thruway')();
 var assert = require('assert');
 
 // This is a middleware function that will receive
-// the `req` and `res` values and a `next` continuation.
+// the `req` value and `res` and `next` continuations.
+// Calling `res(err, val)` will skip to the final callback
+// while calling `next(err)` will continue down the stack.
 stack.use(function(req, res, next){
 	assert.equal(req, 'REQ');
-	assert.equal(res, 'RES');
 	next();
+});
+
+// This middleware calls `res` with the `val` value to
+// pass to the final callback.
+stack.use(function(req, res, next){
+	res(null, 'VAL');
 });
 
 // This is an error handler (note the arity of 4 and the
 // first parameter, `err`). It will only be called if
 // a middleware passes an error to `next`.
 stack.use(function(err, req, res, next){
-	throw err; // You could handle it here instead
+	throw err; // You should handle the error here instead
 });
 
 // This kicks off the middleware stack and calls the
 // callback at the end.
-stack('REQ', 'RES', function(err, res){
-	assert.equal(err, undefined);
-	assert.equal(res, 'RES');
+stack('REQ', function(err, val){
+	assert.equal(err, null);
+	assert.equal(val, 'VAL');
 });
 ```
 

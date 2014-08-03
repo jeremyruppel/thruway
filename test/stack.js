@@ -5,16 +5,17 @@ describe('stack', function() {
   it('returns a function', function() {
     assert.equal(typeof subject(), 'function');
   });
-  it('calls the the middleware with `req` and `res`', function(done) {
+  it('calls the the middleware with `req`, `res` and `next`', function(done) {
     var stack = subject();
 
     stack.use(function(req, res, next) {
       assert.equal(req, 'REQ');
-      assert.equal(res, 'RES');
+      assert.equal(typeof res, 'function');
+      assert.equal(typeof next, 'function');
       next();
     });
 
-    stack('REQ', 'RES', done);
+    stack('REQ', done);
   });
   it('calls each middleware in series', function(done) {
     var stack = subject();
@@ -22,7 +23,8 @@ describe('stack', function() {
 
     function fn(req, res, next) {
       assert.equal(req, 'REQ');
-      assert.equal(res, 'RES');
+      assert.equal(typeof res, 'function');
+      assert.equal(typeof next, 'function');
       count++;
       next();
     }
@@ -31,8 +33,21 @@ describe('stack', function() {
     stack.use(fn);
     stack.use(fn);
 
-    stack('REQ', 'RES', function() {
+    stack('REQ', function() {
       assert.equal(count, 3);
+      done();
+    });
+  });
+  it('yields to the final callback', function(done) {
+    var stack = subject();
+
+    stack.use(function(req, res, next) {
+      next();
+    });
+
+    stack('REQ', function(err, val) {
+      assert.equal(err, null);
+      assert.equal(val, undefined);
       done();
     });
   });
@@ -40,12 +55,12 @@ describe('stack', function() {
     var stack = subject();
 
     stack.use(function(req, res, next) {
-      next();
+      res(null, 'VAL');
     });
 
-    stack('REQ', 'RES', function(err, res) {
+    stack('REQ', function(err, val) {
       assert.equal(err, null);
-      assert.equal(res, 'RES');
+      assert.equal(val, 'VAL');
       done();
     });
   });
@@ -57,9 +72,9 @@ describe('stack', function() {
       next(error);
     });
 
-    stack('REQ', 'RES', function(err, res) {
+    stack('REQ', function(err, val) {
       assert.equal(err, error);
-      assert.equal(res, 'RES');
+      assert.equal(val, undefined);
       done();
     });
   });
