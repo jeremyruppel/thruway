@@ -2,7 +2,8 @@
 
 A tiny middleware stack with error handler support and no dependencies
 
->
+> [![NPM version][npm-badge]][npm]
+> [![Build Status][travis-badge]][travis-ci]
 
 ## Installation
 
