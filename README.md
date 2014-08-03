@@ -49,6 +49,23 @@ stack('REQ', function(err, val){
 });
 ```
 
+### Middleware
+
+Middleware are functions with the signature `fn(req, res, next)`, where:
+
+- `req` is the value you passed to the stack. This can be anything you like and is only called "req" to mimic the express API.
+- `res(err, val)` exits the stack and calls the final callback. No other middleware or error handlers will be run.
+- `next(err)` yields control to the next middleware. If an error is yielded, the error handler stack will be run. If an error is not yielded and there are no more middleware, the final callback will be invoked with `val = undefined`.
+
+### Error Handlers
+
+Error handlers are functions with the signature `fn(err, req, res, next)`, where:
+
+- `err` is the error that was passed to the stack. Each error handler is expected to pass this or another error to either `res` or `next`.
+- `req` is the value you passed to the stack. This can be anything you like and is only called "req" to mimic the express API.
+- `res(err, val)` exits the stack and calls the final callback. Error handlers must pass an error to this function. No other middleware or error handlers will be run.
+- `next(err)` yields control to the next error handler. Error handlers must pass an error to this function. If there are no more error handlers, the final callback will be invoked with `val = undefined`.
+
 ## License
 
 [ISC License][LICENSE]
