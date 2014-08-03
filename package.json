@@ -1,0 +1,19 @@
+{
+  "name": "thruway",
+  "version": "0.0.0",
+  "description": "Tiny middleware stack with error handler support",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "middleware",
+    "stack",
+    "error",
+    "handler",
+    "tiny",
+    "micro"
+  ],
+  "author": "Jeremy Ruppel",
+  "license": "ISC"
+}
