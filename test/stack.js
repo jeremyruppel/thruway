@@ -36,4 +36,31 @@ describe('stack', function() {
       done();
     });
   });
+  it('yields `res` to the final callback', function(done) {
+    var stack = subject();
+
+    stack.use(function(req, res, next) {
+      next();
+    });
+
+    stack('REQ', 'RES', function(err, res) {
+      assert.equal(err, null);
+      assert.equal(res, 'RES');
+      done();
+    });
+  });
+  it('yields `err` to the final callback', function(done) {
+    var stack = subject();
+    var error = new Error('boom');
+
+    stack.use(function(req, res, next) {
+      next(error);
+    });
+
+    stack('REQ', 'RES', function(err, res) {
+      assert.equal(err, error);
+      assert.equal(res, 'RES');
+      done();
+    });
+  });
 });
