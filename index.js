@@ -14,7 +14,7 @@ module.exports = function() {
         var fn = stack.shift();
         fn(req, res, next);
       } else {
-        done();
+        done(null, res);
       }
     }
 
@@ -25,7 +25,7 @@ module.exports = function() {
         var fn = error.shift();
         fn(err, req, res, next);
       } else {
-        done(err);
+        done(err, res);
       }
     }
 
