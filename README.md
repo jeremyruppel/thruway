@@ -1,78 +1,145 @@
 # thruway
 
-A tiny middleware stack with error handler support and no dependencies
+A tiny type-safe dependency-free middleware stack
 
-> [![NPM version][npm-badge]][npm]
-> [![Build Status][travis-badge]][travis-ci]
+## installation
 
-## Installation
-
-``` bash
+```bash
 $ npm install thruway
 ```
 
-## Usage
+## usage
 
-**thruway** creates a generic middleware stack that follows the [express][1] middleware stack semantics closely. It keeps the concept of passing two arguments for the "request" and "response", except that the "request" may be any value you wish and the "response" is a function that will exit the middleware stack.
+_it's dangerous to go alone, take this :hocho:_
 
-``` javascript
-var stack = require('thruway')();
-var assert = require('assert');
-
-// This is a middleware function that will receive
-// the `req` value and `res` and `next` continuations.
-// Calling `res(err, val)` will skip to the final callback
-// while calling `next(err)` will continue down the stack.
-stack.use(function(req, res, next){
-	assert.equal(req, 'REQ');
-	next();
-});
-
-// This middleware calls `res` with the `val` value to
-// pass to the final callback.
-stack.use(function(req, res, next){
-	res(null, 'VAL');
-});
-
-// This is an error handler (note the arity of 4 and the
-// first parameter, `err`). It will only be called if
-// a middleware passes an error to `next`.
-stack.use(function(err, req, res, next){
-	throw err; // You should handle the error here instead
-});
-
-// This kicks off the middleware stack and calls the
-// callback at the end.
-stack('REQ', function(err, val){
-	assert.equal(err, null);
-	assert.equal(val, 'VAL');
-});
+```typescript
+import thruway from "thruway"
+import assert from "node:assert"
 ```
 
-### Middleware
+`thruway<T, U>()` creates a middleware stack that takes `<T>` as input and
+will return `<U>`.
 
-Middleware are functions with the signature `fn(req, res, next)`, where:
+```typescript
+// creates a stack that takes a string as input and will eventually return
+// a number
+const stack = thruway<string, number>()
+```
 
-- `req` is the value you passed to the stack. This can be anything you like and is only called "req" to mimic the express API.
-- `res(err, val)` exits the stack and calls the final callback. No other middleware or error handlers will be run.
-- `next(err)` yields control to the next middleware. If an error is yielded, the error handler stack will be run. If an error is not yielded and there are no more middleware, the final callback will be invoked with `val = undefined`.
+`stack.use()` adds a middleware to the stack. `stack.run()` runs the stack
+with the given input.
 
-### Error Handlers
+```typescript
+// create a new middleware stack
+const stack = thruway<string, string>()
 
-Error handlers are functions with the signature `fn(err, req, res, next)`, where:
+// add a middleware to the stack
+stack.use(function (input) {
+  assert.equal(input, "ohai")
+  return "ohai back"
+})
 
-- `err` is the error that was passed to the stack. Each error handler is expected to pass this or another error to either `res` or `next`.
-- `req` is the value you passed to the stack. This can be anything you like and is only called "req" to mimic the express API.
-- `res(err, val)` exits the stack and calls the final callback. Error handlers must pass an error to this function. No other middleware or error handlers will be run.
-- `next(err)` yields control to the next error handler. Error handlers must pass an error to this function. If there are no more error handlers, the final callback will be invoked with `val = undefined`.
+// run it wih input
+console.log(await stack.run("ohai")) // "ohai back"
+```
 
-## License
+you can optionally pass a config object to the stack, which will be passed to
+every middleware function.
 
-[ISC License][LICENSE]
+```typescript
+// create a new middleware stack with a config that will be passed to every
+// middleware
+const stack = thruway<string, string>({
+  your: "config",
+})
 
-[1]: http://expressjs.com/
-[npm]: http://badge.fury.io/js/thruway
-[npm-badge]: https://badge.fury.io/js/thruway.svg
-[travis-ci]: https://travis-ci.org/jeremyruppel/thruway
-[travis-badge]: https://travis-ci.org/jeremyruppel/thruway.svg?branch=master
+// add a middlware to the stack
+stack.use(function (input, { your }) {
+  assert.equal(input, "ohai")
+  assert.equal(your, "config")
+})
+
+// run it wih input
+await stack.run("ohai")
+```
+
+if you return a value from a middleware, it will stop the execution of the
+stack and return that value. if you return nothing (undefined), it will
+continue to the next middleware in the stack.
+
+```typescript
+// create a new middlware stack
+const stack = thruway<string, string>()
+
+// middleware can return nothing (undefined) and it will continue to the next
+// middlware in the stack
+stack.use(function (input) {
+  // returns nothing
+})
+
+// middleware can return a value and it will stop the stack execution
+stack.use(function (input) {
+  assert.equal(input, "ohai")
+  return "ohai back"
+})
+
+stack.use(function (input) {
+  assert.fail("this will not be called")
+})
+
+console.log(await stack.run("ohai")) // "ohai back"
+```
+
+async works too, obvi.
+
+```typescript
+// create a new middleware stack
+const stack = thruway<string, string>()
+
+// middleware can be async functions
+stack.use(async function (input) {
+  await new Promise((resolve) => setTimeout(resolve, 100))
+  // NB: returns nothing
+})
+
+// or sync functions that return a promise
+stack.use(function (input) {
+  assert.equal(input, "ohai")
+  return new Promise((resolve) => setTimeout(() => resolve("ohai back"), 100))
+})
+
+console.log(await stack.run("ohai")) // "ohai back"
+```
+
+if you throw an error from a middleware, it will stop the execution of the
+stack and throw that error.
+
+```typescript
+// create a new middleware stack
+const stack = thruway<string, string>()
+
+// middleware can throw an error and it will stop the stack execution
+stack.use(function (input) {
+  throw new Error("oh noes")
+})
+
+stack.use(function (input) {
+  assert.fail("this will not be called")
+})
+
+try {
+  await stack.run("ohai")
+} catch (err) {
+  console.error(err.message) // "oh noes"
+}
+```
+
+## license
+
+[MIT License][LICENSE]
+
 [LICENSE]: https://github.com/jeremyruppel/thruway/blob/master/LICENSE
+
+```
+
+```
