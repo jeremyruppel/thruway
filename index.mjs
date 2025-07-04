@@ -7,7 +7,9 @@
  */
 export class Thruway {
   /**
-   * @typedef {function(I, C | undefined): O | undefined | Promise<O | undefined>} Middleware
+   * @typedef {C | undefined} Config
+  /**
+   * @typedef {function(I, Config): O | undefined | Promise<O | undefined>} Middleware
    */
 
   /**
@@ -19,13 +21,13 @@ export class Thruway {
 
   /**
    * The optional config
-   * @type {C | undefined}
+   * @type {Config}
    * @private
    */
   config
 
   /**
-   * @param {C | undefined} config
+   * @param {Config} config
    */
   constructor(config) {
     this.stack = []
@@ -55,11 +57,11 @@ export class Thruway {
 }
 
 /**
- * @param {C | undefined} config
- * @returns {Thruway<I, O, C>}
  * @template I the input type
  * @template O the output type
  * @template C the config type
+ * @param {C | undefined} config
+ * @returns {Thruway<I, O, C>}
  */
 const thruway = (config = undefined) => new Thruway(config)
 

@@ -101,11 +101,13 @@ describe("thruway", function () {
   })
 
   it("calls all middlware with the optional config", async function () {
-    /** @type {import("./index.mjs").Thruway<string, string>} */
-    const stack = thruway({ name: "j bone" })
+    /** @type {import("./index.mjs").Thruway<string, void>} */
+    const stack = thruway({
+      name: "j bone",
+    })
 
-    stack.use(function (input, cfg) {
-      assert.deepEqual(cfg, { name: "j bone" })
+    stack.use(function (input, { name }) {
+      assert.deepEqual(name, "j bone")
     })
 
     assert.equal(await stack.run("ohai"), undefined)
