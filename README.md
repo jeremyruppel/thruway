@@ -139,7 +139,3 @@ try {
 [MIT License][LICENSE]
 
 [LICENSE]: https://github.com/jeremyruppel/thruway/blob/master/LICENSE
-
-```
-
-```
