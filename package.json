@@ -16,7 +16,7 @@
     "micro"
   ],
   "author": "Jeremy Ruppel",
-  "license": "ISC",
+  "license": "MIT",
   "prettier": {
     "singleQuote": false,
     "trailingComma": "all",
